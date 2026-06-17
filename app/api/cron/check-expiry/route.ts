@@ -65,7 +65,7 @@ export async function GET(request: Request) {
 
         // Send alert email
         await resend.emails.send({
-          from: 'Fleet Manager <onboarding@resend.dev>',
+          from: 'Fleet Manager <noreply@transportes-vladiris.es>',
           to: [process.env.ALERT_EMAIL!],
           subject: `⚠️ ${label} expires in ${daysRemaining} days — ${vehicle.plate_number}`,
           html: `
