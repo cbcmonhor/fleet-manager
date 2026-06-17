@@ -1,5 +1,7 @@
 'use client'
 
+import { Suspense } from 'react'
+
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -7,7 +9,7 @@ import { Wrench, Plus, ArrowLeft, Trash2, Edit2, RefreshCw } from 'lucide-react'
 import { Vehicle, ServiceRecord, formatDate } from '@/lib/utils'
 import ServiceForm from '@/components/ServiceForm'
 
-export default function ServicePage() {
+  function ServicePage() {
   const supabase = createClient()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -252,5 +254,12 @@ useEffect(() => {
       )}
 
     </div>
+  )
+}
+export default function ServicePageWrapper() {
+  return (
+    <Suspense>
+      <ServicePage />
+    </Suspense>
   )
 }
