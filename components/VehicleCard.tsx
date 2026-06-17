@@ -1,10 +1,11 @@
 import { Vehicle, getDocumentStatus, getStatusColor, getStatusLabel, formatDate } from '@/lib/utils'
-import { Edit2, Trash2, FileText } from 'lucide-react'
+import { Edit2, Trash2, FileText, Wrench } from 'lucide-react'
 
 type Props = {
   vehicle: Vehicle
   onEdit: () => void
   onDelete: () => void
+  onService: () => void
 }
 
 // Document fields with their display labels
@@ -14,7 +15,7 @@ const documentFields = [
   { key: 'service_expiry', label: 'Service' },
 ]
 
-export default function VehicleCard({ vehicle, onEdit, onDelete }: Props) {
+export default function VehicleCard({ vehicle, onEdit, onDelete, onService }: Props) {
   const statuses = documentFields.map(d =>
     getDocumentStatus(vehicle[d.key as keyof Vehicle] as string)
   )
@@ -49,8 +50,14 @@ export default function VehicleCard({ vehicle, onEdit, onDelete }: Props) {
           </div>
           <h3 className="text-xl font-bold text-gray-900">{vehicle.plate_number}</h3>
         </div>
-
         <div className="flex gap-1">
+          <button
+            onClick={onService}
+            className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+            title="Service history"
+          >
+            <Wrench className="w-4 h-4" />
+          </button>
           <button
             onClick={onEdit}
             className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

@@ -59,3 +59,17 @@ export function formatDate(date: string | null | undefined): string {
     return '-'
   }
 }
+
+export type ServiceRecord = {
+  id: string
+  vehicle_id: string
+  user_id: string
+  date: string
+  mileage: number | null
+  service_type: string
+  description: string | null
+  cost: number | null
+  next_service_date: string | null
+  created_at: string
+  updated_at: string
+}

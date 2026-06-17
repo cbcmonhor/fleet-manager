@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Truck, Plus, LogOut, RefreshCw, AlertTriangle, CheckCircle, Clock } from 'lucide-react'
+import { Truck, Plus, LogOut, RefreshCw, AlertTriangle, CheckCircle, Clock, Wrench } from 'lucide-react'
 import VehicleCard from '@/components/VehicleCard'
 import VehicleForm from '@/components/VehicleForm'
 import DeleteConfirm from '@/components/DeleteConfirm'
@@ -102,6 +102,14 @@ export default function DashboardPage() {
             >
               <RefreshCw className="w-4 h-4" />
             </button>
+            
+          <button
+              onClick={() => router.push('/service')}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors text-sm font-medium"
+            >
+              <Wrench className="w-4 h-4" />
+              Service
+            </button>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
@@ -195,6 +203,7 @@ export default function DashboardPage() {
                 vehicle={vehicle}
                 onEdit={() => openEditForm(vehicle)}
                 onDelete={() => setDeleteTarget(vehicle)}
+                onService={() => router.push(`/service?vehicle=${vehicle.id}`)}
               />
             ))}
           </div>
