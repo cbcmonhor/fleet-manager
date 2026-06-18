@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/check-expiry?token=fleet2024secret",
-      "schedule": "0 8 * * *"
+      "schedule": "0 10 * * *"
     }
   ]
 }
