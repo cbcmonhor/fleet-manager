@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Truck, Plus, LogOut, RefreshCw, AlertTriangle, CheckCircle, Clock, Wrench } from 'lucide-react'
+import { Truck, Plus, LogOut, RefreshCw, AlertTriangle, CheckCircle, Clock, Wrench, BarChart2 } from 'lucide-react'
 import VehicleCard from '@/components/VehicleCard'
 import VehicleForm from '@/components/VehicleForm'
 import DeleteConfirm from '@/components/DeleteConfirm'
@@ -109,6 +109,13 @@ export default function DashboardPage() {
             >
               <Wrench className="w-4 h-4" />
               Service
+            </button>
+            <button
+              onClick={() => router.push('/stats')}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors text-sm font-medium"
+            >
+              <BarChart2 className="w-4 h-4" />
+              Costs
             </button>
             <button
               onClick={handleLogout}

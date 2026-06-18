@@ -157,7 +157,7 @@ export default function ServiceForm({ vehicle, record, onSaved, onClose }: Props
 
           {/* Cost */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Cost (RON)</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Cost (EUR)</label>
             <input
               type="number"
               step="0.01"
