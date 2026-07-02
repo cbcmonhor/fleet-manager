@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Vehicle } from '@/lib/utils'
 import { X, Save, Truck } from 'lucide-react'
-
+import { Customer } from '@/lib/utils'
 type Props = {
   vehicle?: Vehicle
   onSaved: () => void
@@ -22,19 +22,27 @@ export default function VehicleForm({ vehicle, onSaved, onClose }: Props) {
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [customers, setCustomers] = useState<Customer[]>([])
 
   const [form, setForm] = useState({
-    company:       vehicle?.company       || 'Vladiris',
-    plate_number:  vehicle?.plate_number  || '',
-    itv_expiry:    vehicle?.itv_expiry    || '',
-    seguro_expiry: vehicle?.seguro_expiry || '',
-    service_expiry: vehicle?.service_expiry || '',
-    notes:         vehicle?.notes         || '',
-  })
+  company:        vehicle?.company        || 'Vladiris',
+  plate_number:   vehicle?.plate_number   || '',
+  itv_expiry:     vehicle?.itv_expiry     || '',
+  seguro_expiry:  vehicle?.seguro_expiry  || '',
+  service_expiry: vehicle?.service_expiry || '',
+  notes:          vehicle?.notes          || '',
+  client_id:      vehicle?.client_id      || '',
+  monthly_rate:   vehicle?.monthly_rate?.toString() || '',
+})
 
-  function updateField(field: string, value: string) {
-    setForm(prev => ({ ...prev, [field]: value }))
-  }
+function updateField(field: string, value: string) {
+  setForm(prev => ({ ...prev, [field]: value }))
+}
+
+async function loadCustomers() {
+  const { data } = await supabase.from('customers').select('*').order('name')
+  setCustomers(data || [])
+}
 
   async function handleSave() {
     if (!form.plate_number.trim()) {
@@ -55,7 +63,8 @@ export default function VehicleForm({ vehicle, onSaved, onClose }: Props) {
       seguro_expiry:  form.seguro_expiry  || null,
       service_expiry: form.service_expiry || null,
       notes:          form.notes          || null,
-      updated_at:     new Date().toISOString(),
+      client_id:      form.client_id      || null,
+      monthly_rate:   form.monthly_rate ? parseFloat(form.monthly_rate) : null,
     }
 
     let dbError = null
@@ -83,8 +92,12 @@ export default function VehicleForm({ vehicle, onSaved, onClose }: Props) {
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+  useEffect(() => {
+    loadCustomers()
+    }, [])
+
+return (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
 
         {/* Modal header */}
@@ -158,6 +171,39 @@ export default function VehicleForm({ vehicle, onSaved, onClose }: Props) {
               />
             </div>
           ))}
+
+
+          {/* Client */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Assigned Client
+            </label>
+            <select
+              value={form.client_id}
+              onChange={e => updateField('client_id', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">No client assigned</option>
+              {customers.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Monthly rate */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Monthly Rate (EUR)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              value={form.monthly_rate}
+              onChange={e => updateField('monthly_rate', e.target.value)}
+              placeholder="e.g. 500.00"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
           {/* Notes */}
           <div>

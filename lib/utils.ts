@@ -11,6 +11,8 @@ export type Vehicle = {
   seguro_expiry: string | null
   service_expiry: string | null
   notes: string | null
+  client_id: string | null
+  monthly_rate: number | null
   created_at: string
   updated_at: string
 }
@@ -70,6 +72,63 @@ export type ServiceRecord = {
   description: string | null
   cost: number | null
   next_service_date: string | null
+  pdf_url: string | null
   created_at: string
   updated_at: string
+}
+
+export type Customer = {
+  id: string
+  user_id: string
+  name: string
+  cif: string | null
+  address: string | null
+  city: string | null
+  postal_code: string | null
+  country: string | null
+  iban: string | null
+  email: string | null
+  phone: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type Invoice = {
+  id: string
+  user_id: string
+  customer_id: string
+  vehicle_id: string | null
+  invoice_number: string
+  date: string
+  due_date: string | null
+  status: 'draft' | 'sent' | 'paid' | 'cancelled'
+  subtotal: number
+  vat_amount: number
+  total: number
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type InvoiceItem = {
+  id: string
+  invoice_id: string
+  description: string
+  quantity: number
+  unit_price: number
+  vat_percent: number
+  vat_amount: number
+  total: number
+  created_at: string
+}
+
+// Returns Spanish month name from a date string
+export function getSpanishMonth(dateString: string): string {
+  const months = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ]
+  const date = new Date(dateString)
+  return `${months[date.getMonth()]} ${date.getFullYear()}`
 }

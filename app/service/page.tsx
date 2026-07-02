@@ -1,27 +1,37 @@
 'use client'
 
-import { Suspense } from 'react'
-
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Wrench, Plus, ArrowLeft, Trash2, Edit2, RefreshCw } from 'lucide-react'
 import { Vehicle, ServiceRecord, formatDate } from '@/lib/utils'
 import ServiceForm from '@/components/ServiceForm'
 
-  function ServicePage() {
+type InvoiceLine = {
+  id: string
+  service_id: string
+  description: string
+  quantity: number
+  unit_price: number
+  total_price: number
+  vat_percent: number
+  vat_amount: number
+}
+
+function ServicePage() {
   const supabase = createClient()
   const router = useRouter()
   const searchParams = useSearchParams()
+
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
   const [records, setRecords] = useState<ServiceRecord[]>([])
+  const [invoiceLines, setInvoiceLines] = useState<Record<string, InvoiceLine[]>>({})
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editRecord, setEditRecord] = useState<ServiceRecord | undefined>(undefined)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
-  // Load all vehicles
   async function loadVehicles() {
     const { data } = await supabase
       .from('vehicles')
@@ -31,7 +41,6 @@ import ServiceForm from '@/components/ServiceForm'
     setLoading(false)
   }
 
-  // Load service history for selected vehicle
   async function loadRecords(vehicleId: string) {
     setLoading(true)
     const { data } = await supabase
@@ -39,7 +48,25 @@ import ServiceForm from '@/components/ServiceForm'
       .select('*')
       .eq('vehicle_id', vehicleId)
       .order('date', { ascending: false })
-    setRecords(data || [])
+
+    const serviceRecords = data || []
+    setRecords(serviceRecords)
+
+    // Load invoice lines for each record
+    if (serviceRecords.length > 0) {
+      const { data: lines } = await supabase
+        .from('invoice_lines')
+        .select('*')
+        .in('service_id', serviceRecords.map(r => r.id))
+
+      const grouped: Record<string, InvoiceLine[]> = {}
+      for (const line of lines || []) {
+        if (!grouped[line.service_id]) grouped[line.service_id] = []
+        grouped[line.service_id].push(line)
+      }
+      setInvoiceLines(grouped)
+    }
+
     setLoading(false)
   }
 
@@ -60,11 +87,10 @@ import ServiceForm from '@/components/ServiceForm'
     if (selectedVehicle) loadRecords(selectedVehicle.id)
   }
 
-useEffect(() => {
+  useEffect(() => {
     loadVehicles()
   }, [])
 
-  // Auto-select vehicle if coming from dashboard
   useEffect(() => {
     const vehicleId = searchParams.get('vehicle')
     if (vehicleId && vehicles.length > 0) {
@@ -76,7 +102,7 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Top navigation bar */}
+      {/* Navigation */}
       <nav className="bg-white border-b shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -114,7 +140,7 @@ useEffect(() => {
         {/* Vehicle selector */}
         {!selectedVehicle ? (
           <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Select a vehicle to view service history</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Select a vehicle</h2>
             {loading ? (
               <div className="text-center py-16 text-gray-400">
                 <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3" />
@@ -143,7 +169,6 @@ useEffect(() => {
           </div>
         ) : (
           <div>
-            {/* Back to vehicle list */}
             <button
               onClick={() => { setSelectedVehicle(null); setRecords([]) }}
               className="text-sm text-gray-500 hover:text-gray-700 mb-4 flex items-center gap-1"
@@ -152,7 +177,6 @@ useEffect(() => {
               All vehicles
             </button>
 
-            {/* Service records */}
             {loading ? (
               <div className="text-center py-16 text-gray-400">
                 <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3" />
@@ -166,24 +190,24 @@ useEffect(() => {
               </div>
             ) : (
               <div className="space-y-4">
-                {records.map(record => (
-                  <div key={record.id} className="bg-white rounded-xl border shadow-sm p-5">
+                {records.map(rec => (
+                  <div key={rec.id} className="bg-white rounded-xl border shadow-sm p-5">
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <span className="text-xs font-bold px-2 py-1 rounded-full bg-orange-100 text-orange-700">
-                          {record.service_type}
+                          {rec.service_type}
                         </span>
-                        <p className="text-lg font-bold text-gray-900 mt-1">{formatDate(record.date)}</p>
+                        <p className="text-lg font-bold text-gray-900 mt-1">{formatDate(rec.date)}</p>
                       </div>
                       <div className="flex gap-1">
                         <button
-                          onClick={() => { setEditRecord(record); setShowForm(true) }}
+                          onClick={() => { setEditRecord(rec); setShowForm(true) }}
                           className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => setDeleteTarget(record.id)}
+                          onClick={() => setDeleteTarget(rec.id)}
                           className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -194,21 +218,71 @@ useEffect(() => {
                     <div className="grid grid-cols-3 gap-3 text-sm">
                       <div>
                         <p className="text-gray-500 text-xs">Mileage</p>
-                        <p className="font-medium">{record.mileage ? `${record.mileage.toLocaleString()} km` : '-'}</p>
+                        <p className="font-medium">{rec.mileage ? `${rec.mileage.toLocaleString()} km` : '-'}</p>
                       </div>
                       <div>
                         <p className="text-gray-500 text-xs">Cost</p>
-                        <p className="font-medium">{record.cost ? `${record.cost} RON` : '-'}</p>
+                        <p className="font-medium">{rec.cost ? `${rec.cost} EUR` : '-'}</p>
                       </div>
                       <div>
                         <p className="text-gray-500 text-xs">Next service</p>
-                        <p className="font-medium">{formatDate(record.next_service_date)}</p>
+                        <p className="font-medium">{formatDate(rec.next_service_date)}</p>
                       </div>
                     </div>
 
-                    {record.description && (
+                    {rec.description && (
                       <div className="mt-3 pt-3 border-t border-gray-100">
-                        <p className="text-sm text-gray-500">📝 {record.description}</p>
+                        <p className="text-sm text-gray-500">📝 {rec.description}</p>
+                      </div>
+                    )}
+
+                    {/* PDF link */}
+                    {rec.pdf_url && (
+                      <div className="mt-2">
+                        <a
+                          href={rec.pdf_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                          📄 View invoice PDF
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Invoice lines */}
+                    {invoiceLines[rec.id] && invoiceLines[rec.id].length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <p className="text-xs font-bold text-gray-500 mb-2">INVOICE LINES</p>
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-gray-400 border-b">
+                              <th className="text-left pb-1">Description</th>
+                              <th className="text-right pb-1">Qty</th>
+                              <th className="text-right pb-1">Unit</th>
+                              <th className="text-right pb-1">VAT</th>
+                              <th className="text-right pb-1">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {invoiceLines[rec.id].map(invoiceLine => (
+                              <tr key={invoiceLine.id} className="border-b border-gray-50">
+                                <td className="py-1 pr-2">{invoiceLine.description}</td>
+                                <td className="text-right py-1">{invoiceLine.quantity}</td>
+                                <td className="text-right py-1">{invoiceLine.unit_price} EUR</td>
+                                <td className="text-right py-1">{invoiceLine.vat_percent}%</td>
+                                <td className="text-right py-1 font-medium">{invoiceLine.total_price} EUR</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colSpan={4} className="text-right pt-2 font-bold text-gray-700">Total:</td>
+                              <td className="text-right pt-2 font-bold text-gray-900">
+                                {invoiceLines[rec.id].reduce((sum, l) => sum + l.total_price, 0).toFixed(2)} EUR
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
                       </div>
                     )}
                   </div>
@@ -252,10 +326,10 @@ useEffect(() => {
           </div>
         </div>
       )}
-
     </div>
   )
 }
+
 export default function ServicePageWrapper() {
   return (
     <Suspense>

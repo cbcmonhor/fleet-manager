@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Truck, Plus, LogOut, RefreshCw, AlertTriangle, CheckCircle, Clock, Wrench, BarChart2 } from 'lucide-react'
+import { Truck, Plus, LogOut, RefreshCw, AlertTriangle, CheckCircle, Clock, Wrench, BarChart2, Users, FileText } from 'lucide-react'
 import VehicleCard from '@/components/VehicleCard'
 import VehicleForm from '@/components/VehicleForm'
 import DeleteConfirm from '@/components/DeleteConfirm'
@@ -116,6 +116,20 @@ export default function DashboardPage() {
             >
               <BarChart2 className="w-4 h-4" />
               Costs
+            </button>
+            <button
+              onClick={() => router.push('/customers')}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors text-sm font-medium"
+            >
+              <Users className="w-4 h-4" />
+              Customers
+            </button>
+            <button
+              onClick={() => router.push('/invoices')}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors text-sm font-medium"
+            >
+              <FileText className="w-4 h-4" />
+              Invoices
             </button>
             <button
               onClick={handleLogout}
