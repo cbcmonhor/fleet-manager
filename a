@@ -1,0 +1,9 @@
+[33mf48eda4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Force redeploy
+[33maeeb452[m Add customers, invoices, auto-invoice cron job
+[33m77524fc[m Change cron to 10 utc
+[33m0934b73[m Add costs in EUR
+[33m1443f91[m Add daily cronjob
+[33m6d9965f[m Update email sender
+[33m951b4ea[m Fix suspense boundry
+[33ma3fb640[m Add service history and fix styling
+[33m9970ae1[m Initial fleet manager app
