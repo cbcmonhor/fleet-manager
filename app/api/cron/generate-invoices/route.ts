@@ -23,7 +23,19 @@ export async function GET(request: Request) {
   }
 
   try {
-    const today = new Date()
+  const today = new Date()
+
+  // Check if today is the last day of the month
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const isLastDayOfMonth = tomorrow.getDate() === 1
+
+  if (!isLastDayOfMonth) {
+    return NextResponse.json({
+      success: true,
+      message: 'Not the last day of the month, skipping.',
+    })
+  }
     const invoiceDate = today.toISOString().split('T')[0]
 
     // Due date: 15th of next month
