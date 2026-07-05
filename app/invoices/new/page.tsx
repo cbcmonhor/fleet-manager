@@ -178,6 +178,80 @@ function handleVehicleSelect(vehicleId: string) {
       return
     }
 
+    // Generate PDF and send via WhatsApp
+try {
+  // Get full invoice data for PDF
+  const { generateInvoicePdf } = await import('@/lib/generatePdf')
+
+  const fullCustomer = customers.find(c => c.id === form.customer_id)
+  const fullVehicle = vehicles.find(v => v.id === form.vehicle_id) || null
+
+  const pdfBlob = generateInvoicePdf({
+    invoice_number: invoice.invoice_number,
+    date:           invoice.date,
+    due_date:       invoice.due_date,
+    status:         invoice.status,
+    subtotal:       invoice.subtotal,
+    vat_amount:     invoice.vat_amount,
+    total:          invoice.total,
+    notes:          invoice.notes,
+    customer: {
+      name:        fullCustomer?.name || '',
+      cif:         fullCustomer?.cif,
+      address:     fullCustomer?.address,
+      city:        fullCustomer?.city,
+      postal_code: fullCustomer?.postal_code,
+      country:     fullCustomer?.country,
+      iban:        fullCustomer?.iban,
+    },
+    vehicle: fullVehicle ? {
+      plate_number: fullVehicle.plate_number,
+      company:      fullVehicle.company,
+    } : null,
+    items: items.map(i => ({
+      description: i.description,
+      quantity:    i.quantity,
+      unit_price:  i.unit_price,
+      vat_percent: i.vat_percent,
+      vat_amount:  i.vat_amount,
+      total:       i.total,
+    })),
+  })
+
+  // Upload PDF to Supabase Storage
+  const fileName = `invoices/${invoice.invoice_number}.pdf`
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from('service-documents')
+    .upload(fileName, pdfBlob, {
+      contentType: 'application/pdf',
+      upsert: true,
+    })
+
+  if (!uploadError) {
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('service-documents')
+      .getPublicUrl(fileName)
+
+    const pdfUrl = urlData.publicUrl
+
+    // Save PDF URL to invoice
+    await supabase
+      .from('invoices')
+      .update({ pdf_url: pdfUrl })
+      .eq('id', invoice.id)
+
+    // Send WhatsApp with PDF
+        await fetch('/api/send-invoice-whatsapp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ invoiceId: invoice.id, pdfUrl }),
+            })
+        }
+        } catch (err) {
+            console.error('PDF generation or WhatsApp failed:', err)
+        }
+
     router.push(`/invoices/${invoice.id}`)
   }
 

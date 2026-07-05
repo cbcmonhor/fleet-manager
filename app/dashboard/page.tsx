@@ -115,7 +115,7 @@ export default function DashboardPage() {
               className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors text-sm font-medium"
             >
               <BarChart2 className="w-4 h-4" />
-              Costs
+              Statistics
             </button>
             <button
               onClick={() => router.push('/customers')}
