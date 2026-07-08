@@ -1,11 +1,17 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @media print {
   @page {
-    margin: 0;
+    margin: 1cm;
     size: A4;
   }
-  body {
-    margin: 1.5cm;
+  
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .min-h-screen {
+    min-height: auto !important;
   }
 }
