@@ -149,8 +149,8 @@ export default function InvoiceDetailPage() {
       </nav>
 
       {/* Invoice document */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-xl border shadow-sm p-8 print:shadow-none print:border-none">
+      <div className="max-w-4xl mx-auto px-4 py-6 print:p-0 print:max-w-none">
+        <div className="bg-white rounded-xl border shadow-sm p-8 print:shadow-none print:border-none font-sans print:h-auto">
 
           {/* Header */}
           <div className="flex items-start justify-between mb-8">

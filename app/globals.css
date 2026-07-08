@@ -2,16 +2,22 @@
 
 @media print {
   @page {
-    margin: 1cm;
+    margin: 0mm;
     size: A4;
   }
-  
+
   html, body {
     height: auto !important;
     overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .min-h-screen {
     min-height: auto !important;
+  }
+
+  nav {
+    display: none !important;
   }
 }
