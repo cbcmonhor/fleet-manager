@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Printer, CheckCircle, XCircle, Send } from 'lucide-react'
+import { ArrowLeft, Printer, CheckCircle, XCircle, Send, Trash2 } from 'lucide-react'
 import { Invoice, Customer, Vehicle, InvoiceItem } from '@/lib/utils'
 
 export default function InvoiceDetailPage() {
@@ -63,6 +63,13 @@ export default function InvoiceDetailPage() {
     loadInvoice()
   }
 
+  async function handleDelete() {
+    if (!confirm('Are you sure you want to permanently delete this invoice?')) return
+    await supabase.from('invoice_items').delete().eq('invoice_id', id)
+    await supabase.from('invoices').delete().eq('id', id)
+    router.push('/invoices')
+  }
+
   function handlePrint() {
     window.print()
   }
@@ -113,14 +120,23 @@ export default function InvoiceDetailPage() {
               </button>
             )}
             {invoice.status !== 'cancelled' && (
-              <button
-                onClick={() => updateStatus('cancelled')}
-                className="flex items-center gap-2 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium"
-              >
-                <XCircle className="w-4 h-4" />
-                Cancel
-              </button>
-            )}
+  <button
+    onClick={() => updateStatus('cancelled')}
+    className="flex items-center gap-2 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium"
+  >
+    <XCircle className="w-4 h-4" />
+    Cancel
+  </button>
+      )}
+      {invoice.status === 'cancelled' && (
+        <button
+          onClick={handleDelete}
+          className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium"
+        >
+      <Trash2 className="w-4 h-4" />
+      Delete permanently
+    </button>
+      )}
             <button
               onClick={handlePrint}
               className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium"
